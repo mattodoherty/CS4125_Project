@@ -26,6 +26,7 @@ def noise_remover(df: pd.DataFrame) -> pd.DataFrame:
         # Replace multiple spaces with a single space and remove special characters
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'[^A-Za-z0-9.,?!\s]', '', text)
+        print("Cleaning up...")
         return text.strip()
 
     # Apply cleaning to the required columns

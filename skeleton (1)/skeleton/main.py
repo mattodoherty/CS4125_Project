@@ -1,11 +1,13 @@
 #This is a main file: The controller. All methods will directly on directly be called here
+
 from preprocess import *
 from embeddings import *
 from modelling.modelling import *
 from modelling.data_model import *
 import random
 from Config import Config
-
+from TextInterface import *
+from MainController import *
 
 seed =0
 random.seed(seed)
@@ -53,11 +55,6 @@ def preprocess_data(filepath: str) -> pd.DataFrame:
 
 
 def get_embeddings(df: pd.DataFrame):
-    """
-    Generate embeddings using TF-IDF for the relevant columns.
-    :param df: Preprocessed DataFrame.
-    :return: Combined TF-IDF feature matrix and DataFrame.
-    """
     from sklearn.feature_extraction.text import TfidfVectorizer
 
     tfidf_converter = TfidfVectorizer(max_features=2000, min_df=4, max_df=0.90)
@@ -68,28 +65,46 @@ def get_embeddings(df: pd.DataFrame):
     return X, df
 
 def get_data_object(X: np.ndarray, df: pd.DataFrame):
-    """
-    Create and return a Data object for training and testing.
-    :param X: Feature matrix.
-    :param df: DataFrame containing target labels.
-    :return: Data object.
-    """
     return Data(X, df)
 
 def perform_modelling(data: Data, df: pd.DataFrame, name: str):
-    """
-    Perform model training and evaluation.
-    :param data: Data object containing training and testing splits.
-    :param df: DataFrame containing data.
-    :param name: Name of the model.
-    """
-    model = model_predict(data, df, name)
-    model.print_results(data)
+
+    main_controller = MainController()
+
+    while True:
+        TextInterface.display_options()  # Show menu
+        choice = TextInterface.get_user_choice()  # Get user input
+
+        if choice is None:  # Invalid input
+            continue
+
+        if choice == 1:
+            print("Loading and preprocessing data...")
+            df = main_controller.load_and_preprocess_data()
+        elif choice == 2:
+            print("Generating embeddings...")
+            X, df = main_controller.generate_embeddings(df)
+        elif choice == 3:
+            print("Training the model...")
+            model = main_controller.train_model(data, name)
+        elif choice == 4:
+            print("Predicting email types...")
+            predictions = main_controller.predict_emails(model, data)
+        elif choice == 5:
+            print("Evaluating the model...")
+            main_controller.evaluate_model(model, data)
+        elif choice == 6:
+            print("Exiting the system. Goodbye!")
+            break
+
 
 # Code will start executing from following line
 if __name__ == '__main__':
     # Load and preprocess the data
-    df = load_data()
+    TextInterface.display_options()
+
+
+    df = None
 
     df = preprocess_data(df)
 
@@ -103,5 +118,5 @@ if __name__ == '__main__':
     data = get_data_object(X, df)
 
     # Perform modelling
-    perform_modelling(data, df, 'RandomForest')
+    perform_modelling(None, df, 'RandomForest')
 
